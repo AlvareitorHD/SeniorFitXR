@@ -1,0 +1,50 @@
+# Archivos y carpetas generados automáticamente por Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+[Uu]serSettings/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de Visual Studio
+.vsconfig
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Rider
+.idea/
+
+# VSCode
+.vscode/
+
+# Paquetes descargados de forma automática
+Packages/manifest.json
+Packages/packages-lock.json
+
+# Archivos de build
+*.apk
+*.aab
+
+# Archivos de configuración de Unity Cloud Build
+.cloudbuild/
+
+# Otros
+sysinfo.txt
