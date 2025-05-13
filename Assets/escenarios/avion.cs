@@ -1,133 +1,78 @@
 using UnityEngine;
 
-public class AdvancedAirplaneController : MonoBehaviour
+public class AirplaneController : MonoBehaviour
 {
-    public Transform player;
-    public float baseRadius = 4f;
-    public float verticalAmplitude = 1f;
-    public float verticalFrequency = 1f;
-    public float minSpeed = 0.3f;
-    public float maxSpeed = 0.6f;
+    public Transform playerCamera;       // C谩mara del jugador
+    public float distance = 5f;          // Distancia frente al jugador
+    public float heightMin = 1.5f;       // Altura m铆nima
+    public float heightMax = 3.5f;       // Altura m谩xima
+    public float rotationSpeed = 60f;    // Velocidad angular (掳/s)
+    public float lateralAmplitude = 2f;  // Oscilaci贸n lateral
+    public float verticalAmplitude = 1f; // Oscilaci贸n vertical
 
-    private float speed;
-    private float time;
-    private Vector3 lastPosition;
+    private float currentAngle = 0f;
+    private float targetAngle = 0f;
+    private float switchTimer = 0f;
+    private float switchInterval = 5f;
 
-    private enum FlightMode { Orbit, Loop, Zigzag }
-    private FlightMode currentMode;
-
-    private float modeDuration = 5f;
-    private float modeTimer = 0f;
-
-    private Vector3 lastOffset;
-    private Vector3 targetOffset;
-    private float transitionTime = 1f;
-    private float transitionTimer = 0f;
-    private bool transitioning = false;
+    private Vector3 previousPosition;
 
     void Start()
     {
-        time = 0f;
-        lastPosition = transform.position;
-        SwitchFlightMode(true); // Primera vez, sin transici髇
+        previousPosition = transform.position;
     }
 
     void Update()
     {
-        time += Time.deltaTime * speed;
-        modeTimer += Time.deltaTime;
+        float deltaTime = Time.deltaTime;
 
-        if (modeTimer >= modeDuration)
+        // Cambiar el targetAngle cada cierto tiempo
+        switchTimer += deltaTime;
+        if (switchTimer >= switchInterval)
         {
-            SwitchFlightMode();
+            switchTimer = 0f;
+            targetAngle = Random.Range(-90f, 90f); // Solo 180掳 en frente
+            switchInterval = Random.Range(3f, 7f); // Cambios aleatorios
         }
 
-        Vector3 newOffset = ComputeCurrentOffset(time);
+        // Interpolaci贸n suave hacia targetAngle
+        currentAngle = Mathf.MoveTowards(currentAngle, targetAngle, rotationSpeed * deltaTime);
 
-        // Si estamos en transici髇, interpolamos entre el 鷏timo offset y el nuevo
-        if (transitioning)
+        // Calcular posici贸n en semic铆rculo frente al jugador
+        Vector3 forward = playerCamera.forward;
+        forward.y = 0;
+        forward.Normalize();
+
+        Vector3 right = playerCamera.right;
+
+        Vector3 offset = Quaternion.Euler(0, currentAngle, 0) * forward * distance;
+
+        // Movimiento senoide para suavidad
+        float time = Time.time;
+        offset += right * Mathf.Sin(time) * lateralAmplitude;
+        offset.y = Mathf.Sin(time * 0.5f) * verticalAmplitude;
+
+        // Limitar altura
+        float desiredHeight = Mathf.Clamp(playerCamera.position.y + offset.y, heightMin, heightMax);
+        offset.y = desiredHeight - playerCamera.position.y;
+
+        // Nueva posici贸n final
+        Vector3 targetPosition = playerCamera.position + offset;
+
+        // Actualizar posici贸n del avi贸n
+        transform.position = targetPosition;
+
+        // Calcular la direcci贸n de movimiento (trayectoria real)
+        Vector3 movementDirection = (transform.position - previousPosition).normalized;
+
+        if (movementDirection.sqrMagnitude > 0.0001f)
         {
-            transitionTimer += Time.deltaTime;
-            float t = Mathf.Clamp01(transitionTimer / transitionTime);
-            newOffset = Vector3.Lerp(lastOffset, newOffset, SmoothStep(t));
-
-            if (t >= 1f)
-            {
-                transitioning = false;
-            }
+            // Orientar el avi贸n hacia su trayectoria
+            Quaternion targetRotation = Quaternion.LookRotation(movementDirection, Vector3.up);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5f * deltaTime);
         }
 
-        Vector3 targetPos = player.position + newOffset;
-        transform.position = targetPos;
-
-        Vector3 direction = (transform.position - lastPosition).normalized;
-        if (direction.sqrMagnitude > 0.001f)
-        {
-            transform.rotation = Quaternion.LookRotation(direction);
-        }
-
-        lastPosition = transform.position;
-    }
-
-    void SwitchFlightMode(bool instant = false)
-    {
-        lastOffset = ComputeCurrentOffset(time);
-        currentMode = (FlightMode)Random.Range(0, 3);
-        modeDuration = Random.Range(4f, 7f);
-        speed = Random.Range(minSpeed, maxSpeed);
-        modeTimer = 0f;
-
-        if (!instant)
-        {
-            transitioning = true;
-            transitionTimer = 0f;
-        }
-    }
-
-    Vector3 ComputeCurrentOffset(float t)
-    {
-        switch (currentMode)
-        {
-            case FlightMode.Orbit:
-                return OrbitPattern(t);
-            case FlightMode.Loop:
-                return LoopPattern(t);
-            case FlightMode.Zigzag:
-                return ZigzagPattern(t);
-            default:
-                return Vector3.zero;
-        }
-    }
-
-    Vector3 OrbitPattern(float t)
-    {
-        float radius = baseRadius + Mathf.Sin(t * 0.5f) * 1.2f;
-        float x = Mathf.Cos(t) * radius;
-        float z = Mathf.Sin(t) * radius;
-        float y = 1.5f + Mathf.Sin(t * verticalFrequency) * verticalAmplitude;
-        return new Vector3(x, y, z);
-    }
-
-    Vector3 LoopPattern(float t)
-    {
-        float radius = baseRadius;
-        float x = Mathf.Cos(t) * radius;
-        float z = Mathf.Sin(t) * radius;
-        float y = 1.5f + Mathf.Sin(t * 4f) * 2f;
-        return new Vector3(x, y, z);
-    }
-
-    Vector3 ZigzagPattern(float t)
-    {
-        float radius = baseRadius + Mathf.PingPong(t, 1f);
-        float x = Mathf.Cos(t) * radius;
-        float z = Mathf.Sin(t) * radius;
-        float y = 1.5f + Mathf.Sin(t * 6f) * 0.5f;
-        return new Vector3(x + Mathf.Sin(t * 3f) * 0.8f, y, z);
-    }
-
-    float SmoothStep(float t)
-    {
-        return t * t * (3f - 2f * t); // suaviza el Lerp para que no sea lineal
+        // Guardar posici贸n para el siguiente frame
+        previousPosition = transform.position;
     }
 }
