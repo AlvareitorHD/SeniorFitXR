@@ -1451,12 +1451,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2259814ec4c3c094db759c73ee14ea37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 123702486}
-  baseRadius: 4
+  playerCamera: {fileID: 123702486}
+  distance: 5
+  heightMin: 1.5
+  heightMax: 3.5
+  rotationSpeed: 60
+  lateralAmplitude: 2
   verticalAmplitude: 1
-  verticalFrequency: 1
-  minSpeed: 0.3
-  maxSpeed: 0.6
 --- !u!4 &963756135 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: f6d026853a80b8046adbdd473ba7f5af, type: 3}
