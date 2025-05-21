@@ -15,7 +15,7 @@ public class FollowPlayerHead : MonoBehaviour
     public bool keepUpright = true;
 
     [Header("Ángulo de actualización")]
-    [Range(0, 180)] public float angleThreshold = 50f;
+    [Range(0, 180)] public float angleThreshold = 90f;
 
     private Vector3 lastTargetPosition;
 
