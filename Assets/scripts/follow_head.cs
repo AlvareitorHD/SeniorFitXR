@@ -14,10 +14,9 @@ public class FollowPlayerHead : MonoBehaviour
     public bool facePlayer = true;
     public bool keepUpright = true;
 
-    [Header("Ángulo de actualización")]
-    [Range(0, 180)] public float angleThreshold = 90f;
+    private Vector3 targetPosition;
 
-    private Vector3 lastTargetPosition;
+    Camera mainCamera;
 
     void Start()
     {
@@ -27,11 +26,13 @@ public class FollowPlayerHead : MonoBehaviour
             playerHead = Camera.main.transform;
         }
 
-        // Inicializar la posición actual
+        mainCamera = Camera.main;
+
+        // Posición inicial
         if (playerHead != null)
         {
-            lastTargetPosition = playerHead.position + playerHead.forward * followDistance + offset;
-            transform.position = lastTargetPosition;
+            targetPosition = playerHead.position + playerHead.forward * followDistance + offset;
+            transform.position = targetPosition;
         }
     }
 
@@ -39,23 +40,27 @@ public class FollowPlayerHead : MonoBehaviour
     {
         if (playerHead == null) return;
 
-        // Dirección desde el jugador hacia el canvas
-        Vector3 toCanvas = (transform.position - playerHead.position).normalized;
-        Vector3 playerForward = playerHead.forward;
+        // Verificar si el objeto está fuera del campo de visión
+        Vector3 viewportPos = mainCamera.WorldToViewportPoint(transform.position);
+        bool isVisible = viewportPos.z > 0 && viewportPos.x > 0 && viewportPos.x < 1 && viewportPos.y > 0 && viewportPos.y < 1;
 
-        float angle = Vector3.Angle(playerForward, toCanvas);
-
-        // Si el ángulo supera el umbral, mover el canvas
-        if (angle > angleThreshold)
+        if (!isVisible)
         {
-            Vector3 targetPos = playerHead.position + playerHead.forward * followDistance + offset;
-            lastTargetPosition = targetPos;
+            // Reposicionar delante del jugador si ya no se ve
+            Vector3 desiredPosition = playerHead.position + playerHead.forward * followDistance + offset;
+
+            // Solo actualizar la posición objetivo si el jugador NO se ha acercado demasiado
+            float currentDistance = Vector3.Distance(playerHead.position, transform.position);
+            if (currentDistance > followDistance * 0.75f) // permite acercarse sin que se aleje
+            {
+                targetPosition = desiredPosition;
+            }
         }
 
         // Movimiento suave
-        transform.position = Vector3.Lerp(transform.position, lastTargetPosition, Time.deltaTime * moveSmoothness);
+        transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * moveSmoothness);
 
-        // Mirar al jugador
+        // Rotar hacia el jugador si está habilitado
         if (facePlayer)
         {
             Vector3 lookDir = transform.position - playerHead.position;

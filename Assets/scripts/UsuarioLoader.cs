@@ -1,103 +1,99 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Networking;
+using TMPro;
+using System;
+using System.IO;
+using System.Net;
 using System.Collections;
-using TMPro;  // <-- Importante para TextMeshPro
+using System.Collections.Generic;
 
 public class UsuarioLoader : MonoBehaviour
 {
     [Header("Configuración UI")]
-    public Transform panelContenedor;     // Panel donde se instanciarán los botones
-    public GameObject botonPrefab;        // Prefab del botón
+    public Transform panelContenedor;
+    public GameObject botonPrefab;
 
     [Header("Configuración de Red")]
-    public string serverBaseUrl = "https://192.168.1.252:3000"; // IP del servidor Node.js
-    public string apiEndpoint = "/api/usuarios";               // Endpoint API
+    public string serverBaseUrl = "https://192.168.1.252:3000";
+    public string apiEndpoint = "/api/usuarios";
 
     void Start()
     {
-        Debug.Log("Iniciando carga de usuarios...");
+        ServicePointManager.ServerCertificateValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
         StartCoroutine(CargarUsuarios());
     }
 
     IEnumerator CargarUsuarios()
     {
-        string fullUrl = serverBaseUrl + apiEndpoint;
+        string url = serverBaseUrl + apiEndpoint;
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+        request.Method = "GET";
 
-        UnityWebRequest www = UnityWebRequest.Get(fullUrl);
-        www.certificateHandler = new BypassCertificate(); // Ignora errores de certificado
-        yield return www.SendWebRequest();
+        string json = null;
 
-        if (www.result != UnityWebRequest.Result.Success)
+        using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+        using (StreamReader reader = new StreamReader(response.GetResponseStream()))
         {
-            Debug.Log("Error al cargar usuarios: " + www.error);
+            json = reader.ReadToEnd();
         }
-        else
+
+        if (string.IsNullOrEmpty(json))
         {
-            string rawJson = www.downloadHandler.text;
-            Debug.Log("Respuesta JSON cruda: " + rawJson);
+            Debug.LogError("No se recibió JSON del servidor");
+            yield break;
+        }
 
-            // Adaptar el JSON si es un array plano
-            string wrappedJson = "{\"usuarios\":" + rawJson + "}";
+        // Si es un array plano, envolverlo
+        string wrappedJson = "{\"usuarios\":" + json + "}";
+        UsuarioList lista = JsonUtility.FromJson<UsuarioList>(wrappedJson);
 
-            UsuarioList lista = JsonUtility.FromJson<UsuarioList>(wrappedJson);
+        foreach (Usuario u in lista.usuarios)
+        {
+            GameObject boton = Instantiate(botonPrefab, panelContenedor);
 
-            foreach (Usuario u in lista.usuarios)
+            // Asignar texto
+            TMP_Text texto = boton.GetComponentInChildren<TMP_Text>();
+            if (texto != null)
+                texto.text = u.name;
+
+            // Cargar imagen
+            if (!string.IsNullOrEmpty(u.photoUrl))
             {
-                GameObject boton = Instantiate(botonPrefab, panelContenedor);
-
-                // Asignar nombre con TextMeshPro
-                TMP_Text textoNombre = boton.GetComponentInChildren<TMP_Text>();
-                if (textoNombre != null)
-                {
-                    textoNombre.text = u.name;
-                }
-                else
-                {
-                    Debug.LogWarning("No se encontró componente TMP_Text en el prefab.");
-                }
-
-                // Cargar y asignar imagen solo si hay URL válida
-                if (!string.IsNullOrEmpty(u.photoUrl))
-                {
-                    string fullImageUrl = serverBaseUrl + u.photoUrl;
-                    Debug.Log("Cargando imagen desde: " + fullImageUrl);
-                    StartCoroutine(CargarImagen(fullImageUrl, boton));
-                }
+                string fullImageUrl = serverBaseUrl + u.photoUrl;
+                yield return StartCoroutine(DescargarImagen(fullImageUrl, boton));
             }
-
-            Debug.Log("Usuarios cargados: " + lista.usuarios.Count);
         }
     }
 
-IEnumerator CargarImagen(string url, GameObject boton)
-{
-    UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
-        www.certificateHandler = new BypassCertificate(); // Ignora errores de certificado
-        yield return www.SendWebRequest();
-
-    if (www.result == UnityWebRequest.Result.Success)
+    IEnumerator DescargarImagen(string url, GameObject boton)
     {
-        Texture2D texture = DownloadHandlerTexture.GetContent(www);
+        HttpWebRequest imageRequest = (HttpWebRequest)WebRequest.Create(url);
+        imageRequest.Method = "GET";
+        imageRequest.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 
-        Image img = boton.GetComponentInChildren<Image>();
-        if (img != null)
+        HttpWebResponse imageResponse = (HttpWebResponse)imageRequest.GetResponse();
+
+        using (Stream stream = imageResponse.GetResponseStream())
+        using (MemoryStream ms = new MemoryStream())
         {
-            // Convertir Texture2D a Sprite
+            stream.CopyTo(ms);
+            byte[] data = ms.ToArray();
+
+            Texture2D texture = new Texture2D(2, 2);
+            texture.LoadImage(data);
+
             Sprite sprite = Sprite.Create(texture,
                 new Rect(0, 0, texture.width, texture.height),
                 new Vector2(0.5f, 0.5f));
-            img.sprite = sprite;
-        }
-        else
-        {
-            Debug.LogWarning("No se encontró componente Image en el prefab.");
-        }
-    }
-    else
-    {
-        Debug.Log("Error al cargar imagen: " + www.error);
-    }
-}
 
+            Image img = boton.GetComponentInChildren<Image>();
+            if (img != null)
+            {
+                img.sprite = sprite;
+                img.preserveAspect = true;
+            }
+        }
+
+        yield return null;
+    }
 }
