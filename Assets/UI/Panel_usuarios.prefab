@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 2321002066951914148}
   - component: {fileID: 3180592433770816742}
   - component: {fileID: 60775807040786714}
-  - component: {fileID: 8383281782491524965}
   m_Layer: 3
   m_Name: Panel_usuarios
   m_TagString: Untagged
@@ -106,26 +105,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &8383281782491524965
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 52620789133338265}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3716a9af286b174ba1d3225e028ad86, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  inputNombre: {fileID: 0}
-  scrollAltura: {fileID: 0}
-  textoAlturaPreview: {fileID: 0}
-  btnAceptar: {fileID: 0}
-  colorActivo: {r: 0.2, g: 0.8, b: 0.2, a: 1}
-  colorInactivo: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  alturaMin: 1
-  alturaMax: 2
 --- !u!1 &927838352364453621
 GameObject:
   m_ObjectHideFlags: 0

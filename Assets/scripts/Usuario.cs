@@ -4,6 +4,7 @@ using System.Collections.Generic;
 [Serializable]
 public class Usuario
 {
+    public int id;
     public string name;
     public float height;
     public string photoUrl;

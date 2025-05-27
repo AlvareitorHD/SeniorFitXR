@@ -1,26 +1,29 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 
-public class FollowPlayerHead : MonoBehaviour
+public class FollowPlayerHeadImproved : MonoBehaviour
 {
-    [Tooltip("C·mara del jugador (cabeza). Se autoconfigura si est· en blanco).")]
+    [Tooltip("Referencia a la cabeza del jugador (se autoconfigura si est√° vac√≠a).")]
     public Transform playerHead;
 
-    [Header("Ajustes de posiciÛn")]
-    public float followDistance = 1.5f;
-    public Vector3 offset = Vector3.zero;
-    public float moveSmoothness = 1f;
+    [Header("Posici√≥n del men√∫")]
+    public float idealDistance = 0.6f;
+    public float verticalOffset = -0.2f;
+    public Vector3 additionalOffset = Vector3.zero;
+    public float positionLerpSpeed = 5f;
 
-    [Header("RotaciÛn")]
+    [Header("Rotaci√≥n")]
     public bool facePlayer = true;
     public bool keepUpright = true;
 
-    private Vector3 targetPosition;
+    [Header("Umbral de movimiento horizontal")]
+    [Tooltip("√Ångulo m√≠nimo (en grados) que se debe superar para mover horizontalmente el men√∫.")]
+    public float horizontalAngleThreshold = 45f;
 
-    Camera mainCamera;
+    private Vector3 previousForwardFlat; // Direcci√≥n anterior (solo eje Y)
+    private Camera mainCamera;
 
     void Start()
     {
-        // Autoasignar la c·mara principal si no se ha configurado
         if (playerHead == null && Camera.main != null)
         {
             playerHead = Camera.main.transform;
@@ -28,11 +31,9 @@ public class FollowPlayerHead : MonoBehaviour
 
         mainCamera = Camera.main;
 
-        // PosiciÛn inicial
         if (playerHead != null)
         {
-            targetPosition = playerHead.position + playerHead.forward * followDistance + offset;
-            transform.position = targetPosition;
+            previousForwardFlat = new Vector3(playerHead.forward.x, 0, playerHead.forward.z).normalized;
         }
     }
 
@@ -40,32 +41,46 @@ public class FollowPlayerHead : MonoBehaviour
     {
         if (playerHead == null) return;
 
-        // Verificar si el objeto est· fuera del campo de visiÛn
-        Vector3 viewportPos = mainCamera.WorldToViewportPoint(transform.position);
-        bool isVisible = viewportPos.z > 0 && viewportPos.x > 0 && viewportPos.x < 1 && viewportPos.y > 0 && viewportPos.y < 1;
+        // Direcci√≥n horizontal del jugador
+        Vector3 currentForwardFlat = new Vector3(playerHead.forward.x, 0, playerHead.forward.z).normalized;
 
-        if (!isVisible)
+        // √Ångulo entre direcciones horizontales
+        float angle = Vector3.Angle(previousForwardFlat, currentForwardFlat);
+
+        if (angle > horizontalAngleThreshold)
         {
-            // Reposicionar delante del jugador si ya no se ve
-            Vector3 desiredPosition = playerHead.position + playerHead.forward * followDistance + offset;
-
-            // Solo actualizar la posiciÛn objetivo si el jugador NO se ha acercado demasiado
-            float currentDistance = Vector3.Distance(playerHead.position, transform.position);
-            if (currentDistance > followDistance * 0.75f) // permite acercarse sin que se aleje
-            {
-                targetPosition = desiredPosition;
-            }
+            previousForwardFlat = currentForwardFlat;
         }
 
-        // Movimiento suave
-        transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * moveSmoothness);
+        // Verificar si el jugador ha pasado detr√°s del panel
+        Vector3 menuToPlayer = playerHead.position - transform.position;
+        Vector3 menuForward = (transform.position - playerHead.position).normalized;
+        float dot = Vector3.Dot(menuForward, menuToPlayer.normalized);
 
-        // Rotar hacia el jugador si est· habilitado
+        bool playerBehindPanel = dot < 0f; // Producto escalar negativo ‚Üí jugador detr√°s
+
+        Vector3 desiredPosition = transform.position;
+
+        if (playerBehindPanel)
+        {
+            // Reposicionar solo si el jugador ha pasado detr√°s
+            desiredPosition = playerHead.position + previousForwardFlat * idealDistance;
+            desiredPosition.y += verticalOffset;
+            desiredPosition += additionalOffset;
+        }
+
+        // Mover suavemente
+        transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * positionLerpSpeed);
+
+        // Rotar hacia el jugador
         if (facePlayer)
         {
             Vector3 lookDir = transform.position - playerHead.position;
-            if (keepUpright) lookDir.y = 0f;
-            transform.rotation = Quaternion.LookRotation(lookDir);
+            if (keepUpright) lookDir.y = 0;
+            if (lookDir.sqrMagnitude > 0.01f)
+            {
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(lookDir), Time.deltaTime * positionLerpSpeed);
+            }
         }
     }
 }

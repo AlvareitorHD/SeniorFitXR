@@ -1,99 +1,120 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System;
-using System.IO;
-using System.Net;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using UnityEngine.Networking;
 
 public class UsuarioLoader : MonoBehaviour
 {
-    [Header("Configuración UI")]
+    [Header("UI")]
     public Transform panelContenedor;
     public GameObject botonPrefab;
 
-    [Header("Configuración de Red")]
+    [Header("Red")]
     public string serverBaseUrl = "https://192.168.1.252:3000";
     public string apiEndpoint = "/api/usuarios";
 
-    void Start()
+    private string RutaLocal => Path.Combine(Application.persistentDataPath, "usuarios.json");
+
+    private void OnEnable()
     {
-        ServicePointManager.ServerCertificateValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-        StartCoroutine(CargarUsuarios());
+        StartCoroutine(CargarUsuariosUnicaVez());
     }
 
-    IEnumerator CargarUsuarios()
+    IEnumerator CargarUsuariosUnicaVez()
     {
+        LimpiarPanel();
+
+        List<Usuario> usuarios = null;
+
+        // Intentar cargar desde el servidor primero
         string url = serverBaseUrl + apiEndpoint;
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-        request.Method = "GET";
+        UnityWebRequest request = UnityWebRequest.Get(url);
+        request.certificateHandler = new BypassCertificate();
 
-        string json = null;
+        yield return request.SendWebRequest();
 
-        using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-        using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+        if (request.result == UnityWebRequest.Result.Success)
         {
-            json = reader.ReadToEnd();
+            string json = "{\"usuarios\":" + request.downloadHandler.text + "}";
+            File.WriteAllText(RutaLocal, json);
+
+            UsuarioList lista = JsonUtility.FromJson<UsuarioList>(json);
+            usuarios = lista?.usuarios ?? new List<Usuario>();
+
+            Debug.Log("Usuarios cargados desde servidor.");
+        }
+        else
+        {
+            Debug.LogWarning("No se pudo conectar al servidor. Cargando datos locales...");
+
+            if (File.Exists(RutaLocal))
+            {
+                string json = File.ReadAllText(RutaLocal);
+                UsuarioList lista = JsonUtility.FromJson<UsuarioList>(json);
+                usuarios = lista?.usuarios ?? new List<Usuario>();
+            }
+            else
+            {
+                Debug.LogWarning("No hay datos locales disponibles.");
+                usuarios = new List<Usuario>();
+            }
         }
 
-        if (string.IsNullOrEmpty(json))
-        {
-            Debug.LogError("No se recibió JSON del servidor");
-            yield break;
-        }
+        // Mostrar usuarios desde la fuente seleccionada
+        if (usuarios != null && usuarios.Count > 0)
+            yield return StartCoroutine(MostrarUsuarios(usuarios));
+    }
 
-        // Si es un array plano, envolverlo
-        string wrappedJson = "{\"usuarios\":" + json + "}";
-        UsuarioList lista = JsonUtility.FromJson<UsuarioList>(wrappedJson);
+    void LimpiarPanel()
+    {
+        foreach (Transform child in panelContenedor)
+            Destroy(child.gameObject);
+    }
 
-        foreach (Usuario u in lista.usuarios)
+    IEnumerator MostrarUsuarios(List<Usuario> usuarios)
+    {
+        int contador = 0;
+
+        foreach (Usuario u in usuarios)
         {
             GameObject boton = Instantiate(botonPrefab, panelContenedor);
-
-            // Asignar texto
             TMP_Text texto = boton.GetComponentInChildren<TMP_Text>();
-            if (texto != null)
-                texto.text = u.name;
+            if (texto != null) texto.text = u.name;
 
-            // Cargar imagen
             if (!string.IsNullOrEmpty(u.photoUrl))
             {
                 string fullImageUrl = serverBaseUrl + u.photoUrl;
                 yield return StartCoroutine(DescargarImagen(fullImageUrl, boton));
             }
+
+            if (++contador % 5 == 0)
+                yield return null;
         }
     }
 
     IEnumerator DescargarImagen(string url, GameObject boton)
     {
-        HttpWebRequest imageRequest = (HttpWebRequest)WebRequest.Create(url);
-        imageRequest.Method = "GET";
-        imageRequest.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
+        request.certificateHandler = new BypassCertificate();
+        yield return request.SendWebRequest();
 
-        HttpWebResponse imageResponse = (HttpWebResponse)imageRequest.GetResponse();
-
-        using (Stream stream = imageResponse.GetResponseStream())
-        using (MemoryStream ms = new MemoryStream())
+        if (request.result != UnityWebRequest.Result.Success)
         {
-            stream.CopyTo(ms);
-            byte[] data = ms.ToArray();
-
-            Texture2D texture = new Texture2D(2, 2);
-            texture.LoadImage(data);
-
-            Sprite sprite = Sprite.Create(texture,
-                new Rect(0, 0, texture.width, texture.height),
-                new Vector2(0.5f, 0.5f));
-
-            Image img = boton.GetComponentInChildren<Image>();
-            if (img != null)
-            {
-                img.sprite = sprite;
-                img.preserveAspect = true;
-            }
+            Debug.LogWarning("Error al descargar imagen: " + request.error);
+            yield break;
         }
 
-        yield return null;
+        Texture2D tex = DownloadHandlerTexture.GetContent(request);
+        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+
+        Image img = boton.GetComponentInChildren<Image>();
+        if (img != null)
+        {
+            img.sprite = sprite;
+            img.preserveAspect = true;
+        }
     }
 }

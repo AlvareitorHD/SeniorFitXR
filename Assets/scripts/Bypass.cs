@@ -2,8 +2,6 @@ using UnityEngine.Networking;
 
 public class BypassCertificate : CertificateHandler
 {
-    protected override bool ValidateCertificate(byte[] certificateData)
-    {
-        return true; // Ignora cualquier error del certificado
-    }
+    // Este CertificateHandler desactiva la validación SSL (solo para desarrollo local)
+        protected override bool ValidateCertificate(byte[] certificateData) => true;
 }
