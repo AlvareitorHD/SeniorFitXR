@@ -12,28 +12,39 @@ public class UsuarioLoader : MonoBehaviour
     public Transform panelContenedor;
     public GameObject botonPrefab;
 
+
     [Header("Red")]
-    public string serverBaseUrl = "https://192.168.1.252:3000";
+    public string serverBaseUrl = "https://pegasus-powerful-imp.ngrok-free.app";
     public string apiEndpoint = "/api/usuarios";
 
     private string RutaLocal => Path.Combine(Application.persistentDataPath, "usuarios.json");
+    private string RutaImagenes => Path.Combine(Application.persistentDataPath, "imagenes");
+    private string NombreImagenDefault = "default.png";
+
+    private Sprite spriteDefault;
 
     private void OnEnable()
     {
-        StartCoroutine(CargarUsuariosUnicaVez());
+        Debug.Log("[UsuarioLoader] OnEnable: Inicio de carga de usuarios.");
+        if (!Directory.Exists(RutaImagenes)) Directory.CreateDirectory(RutaImagenes);
+        StartCoroutine(PrepararYMostrarUsuarios());
+    }
+
+    IEnumerator PrepararYMostrarUsuarios()
+    {
+        yield return StartCoroutine(CargarImagenDefault());
+        yield return StartCoroutine(CargarUsuariosUnicaVez());
     }
 
     IEnumerator CargarUsuariosUnicaVez()
     {
         LimpiarPanel();
+        Debug.Log("[UsuarioLoader] Limpiado panel de usuarios.");
 
         List<Usuario> usuarios = null;
-
-        // Intentar cargar desde el servidor primero
         string url = serverBaseUrl + apiEndpoint;
-        UnityWebRequest request = UnityWebRequest.Get(url);
-        request.certificateHandler = new BypassCertificate();
 
+        UnityWebRequest request = UnityWebRequest.Get(url);
         yield return request.SendWebRequest();
 
         if (request.result == UnityWebRequest.Result.Success)
@@ -43,13 +54,9 @@ public class UsuarioLoader : MonoBehaviour
 
             UsuarioList lista = JsonUtility.FromJson<UsuarioList>(json);
             usuarios = lista?.usuarios ?? new List<Usuario>();
-
-            Debug.Log("Usuarios cargados desde servidor.");
         }
         else
         {
-            Debug.LogWarning("No se pudo conectar al servidor. Cargando datos locales...");
-
             if (File.Exists(RutaLocal))
             {
                 string json = File.ReadAllText(RutaLocal);
@@ -58,14 +65,14 @@ public class UsuarioLoader : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("No hay datos locales disponibles.");
                 usuarios = new List<Usuario>();
             }
         }
 
-        // Mostrar usuarios desde la fuente seleccionada
         if (usuarios != null && usuarios.Count > 0)
+        {
             yield return StartCoroutine(MostrarUsuarios(usuarios));
+        }
     }
 
     void LimpiarPanel()
@@ -77,6 +84,7 @@ public class UsuarioLoader : MonoBehaviour
     IEnumerator MostrarUsuarios(List<Usuario> usuarios)
     {
         int contador = 0;
+        PanelManager panelManager = FindObjectOfType<PanelManager>();
 
         foreach (Usuario u in usuarios)
         {
@@ -87,31 +95,93 @@ public class UsuarioLoader : MonoBehaviour
             if (!string.IsNullOrEmpty(u.photoUrl))
             {
                 string fullImageUrl = serverBaseUrl + u.photoUrl;
-                yield return StartCoroutine(DescargarImagen(fullImageUrl, boton));
+                yield return StartCoroutine(ObtenerImagenLocalODescargar(fullImageUrl, boton));
+            }
+            else
+            {
+                AsignarSpriteAlBoton(boton, spriteDefault);
             }
 
             if (++contador % 5 == 0)
                 yield return null;
+
+            BotonUsuario botonUsuario = boton.GetComponent<BotonUsuario>();
+            if (botonUsuario != null)
+            {
+                botonUsuario.usuarioId = u.id;
+                botonUsuario.servidorBase = serverBaseUrl;
+                botonUsuario.panelManager = panelManager; // Asignación aquí
+            }
         }
     }
 
-    IEnumerator DescargarImagen(string url, GameObject boton)
+    IEnumerator ObtenerImagenLocalODescargar(string url, GameObject boton)
     {
-        UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
-        request.certificateHandler = new BypassCertificate();
-        yield return request.SendWebRequest();
+        string nombreArchivo = Path.GetFileName(url);
+        string rutaLocal = Path.Combine(RutaImagenes, nombreArchivo);
 
-        if (request.result != UnityWebRequest.Result.Success)
+        if (File.Exists(rutaLocal))
         {
-            Debug.LogWarning("Error al descargar imagen: " + request.error);
+            byte[] datos = File.ReadAllBytes(rutaLocal);
+            Texture2D tex = new Texture2D(2, 2);
+            tex.LoadImage(datos);
+            Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            AsignarSpriteAlBoton(boton, sprite);
             yield break;
         }
 
-        Texture2D tex = DownloadHandlerTexture.GetContent(request);
-        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
+        yield return request.SendWebRequest();
 
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            Texture2D tex = DownloadHandlerTexture.GetContent(request);
+            byte[] bytes = tex.EncodeToPNG();
+            File.WriteAllBytes(rutaLocal, bytes);
+            Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            AsignarSpriteAlBoton(boton, sprite);
+        }
+        else
+        {
+            Debug.LogWarning("[UsuarioLoader] Error al descargar imagen: " + request.error);
+        }
+    }
+
+    IEnumerator CargarImagenDefault()
+    {
+        string url = serverBaseUrl + "/" + NombreImagenDefault;
+        string rutaLocal = Path.Combine(RutaImagenes, NombreImagenDefault);
+
+        if (File.Exists(rutaLocal))
+        {
+            byte[] datos = File.ReadAllBytes(rutaLocal);
+            Texture2D tex = new Texture2D(2, 2);
+            tex.LoadImage(datos);
+            spriteDefault = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            yield break;
+        }
+
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            Texture2D tex = DownloadHandlerTexture.GetContent(request);
+            byte[] bytes = tex.EncodeToPNG();
+            File.WriteAllBytes(rutaLocal, bytes);
+            spriteDefault = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+        }
+        else
+        {
+            Debug.LogWarning("[UsuarioLoader] No se pudo descargar la imagen por defecto: " + request.error);
+            spriteDefault = null;
+        }
+    }
+
+    void AsignarSpriteAlBoton(GameObject boton, Sprite sprite)
+    {
         Image img = boton.GetComponentInChildren<Image>();
-        if (img != null)
+        if (img != null && sprite != null)
         {
             img.sprite = sprite;
             img.preserveAspect = true;

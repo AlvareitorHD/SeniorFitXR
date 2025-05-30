@@ -6,6 +6,12 @@ public class ContadorPuntos : MonoBehaviour
     public TextMeshProUGUI textMesh; // Asigna el componente TextMeshProUGUI desde el Inspector
     private int puntos = 0;
 
+    // Getter de puntos
+    public int Puntos
+    {
+        get { return puntos; }
+    }
+
     public void SumarPunto()
     {
         puntos++;

@@ -1,13 +1,10 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using System.Net;
 using System.IO;
-using System.Text;
-using System;
-using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
 public class RegistroUsuario : MonoBehaviour
 {
@@ -25,13 +22,15 @@ public class RegistroUsuario : MonoBehaviour
     private float alturaSeleccionada = 1.50f;
 
     [Header("Red")]
-    public string serverUrl = "https://192.168.1.252:3000/register";
+    public string serverUrl = "https://pegasus-powerful-imp.ngrok-free.app/register";
 
     void Start()
     {
-        inputNombre.text = "Usuario"; // BORRAR DESPUES YA QUE PARA PRUEBAS
+        //inputNombre.text = "Usuario"; // Solo para pruebas
         inputNombre.onValueChanged.AddListener(ValidarNombre);
-        scrollAltura.onValueChanged.AddListener(v => ActualizarAltura(v));
+        scrollAltura.onValueChanged.AddListener(ActualizarAltura);
+
+        ActualizarAltura(scrollAltura.value);
         ValidarNombre(inputNombre.text);
     }
 
@@ -40,23 +39,20 @@ public class RegistroUsuario : MonoBehaviour
         string nombre = inputNombre.text.Trim();
         if (string.IsNullOrEmpty(nombre)) return;
 
-        // Convertir la altura a cm
         int alturaCm = Mathf.RoundToInt(alturaSeleccionada * 100f);
-        // Print
-        Debug.Log("Altura seleccionada: " + alturaSeleccionada);
-        
-        // Formulario para enviar por POST
+        Debug.Log($"Nombre: {nombre}, Altura: {alturaCm} cm");
+
         WWWForm form = new WWWForm();
         form.AddField("name", nombre);
         form.AddField("height", alturaCm);
 
-        StartCoroutine(EnviarFormulario(form));
+        StartCoroutine(EnviarFormulario(form, nombre, alturaSeleccionada));
     }
 
-    IEnumerator EnviarFormulario(WWWForm form)
+    IEnumerator EnviarFormulario(WWWForm form, string nombre, float altura)
     {
         UnityWebRequest www = UnityWebRequest.Post(serverUrl, form);
-        www.certificateHandler = new BypassCertificate(); // Si es necesario ignorar certificado
+        // www.certificateHandler = new BypassCertificate(); // opcional con HTTPS self-signed
         yield return www.SendWebRequest();
 
         if (www.result == UnityWebRequest.Result.Success)
@@ -68,37 +64,32 @@ public class RegistroUsuario : MonoBehaviour
             Debug.LogError("Error al registrar usuario: " + www.error);
         }
 
-        inputNombre.text = "";
-        scrollAltura.value = 0f;
+        // Guardar usuario local solo si la petición fue exitosa
+        Usuario nuevoUsuario = new Usuario(nombre, altura)
+        {
+            photoUrl = "/default.png", // Aquí puedes asignar una URL de foto si es necesario
+            id = 0, // Asigna un ID si es necesario, o maneja esto en el servidor
+        };
 
-        // Buscar en la escena el objeto vacio gestorUI y usar su clase PanelManager
+        GuardarUsuarioLocal(nuevoUsuario);
+
+
+        // Limpiar entradas
+        inputNombre.text = "";
+        scrollAltura.value = 1.5f;
+        // Cambiar al panel de inicio
         GameObject gestorUI = GameObject.Find("GestorUI");
         if (gestorUI != null)
         {
             PanelManager panelManager = gestorUI.GetComponent<PanelManager>();
-            if (panelManager != null)
-            {
-                panelManager.MostrarInicio();
-            }
-            else
-            {
-                Debug.LogError("No se encontró el componente PanelManager en gestorUI.");
-            }
+            panelManager?.MostrarInicio();
         }
-        else
-        {
-            Debug.LogError("No se encontró el objeto gestorUI en la escena.");
-        }
-
-        // Crear usuario localmente
-        Usuario nuevoUsuario = new Usuario(inputNombre.text.Trim(), alturaSeleccionada);
-        GuardarUsuarioLocal(nuevoUsuario);
 
     }
 
-    private void ActualizarAltura(float valorScrollbar)
+    private void ActualizarAltura(float valor)
     {
-        alturaSeleccionada = valorScrollbar;
+        alturaSeleccionada = valor;
         textoAlturaPreview.text = $"{alturaSeleccionada:F2} m";
     }
 
@@ -107,35 +98,32 @@ public class RegistroUsuario : MonoBehaviour
         bool esValido = !string.IsNullOrWhiteSpace(texto);
         btnAceptar.interactable = esValido;
 
-        ColorBlock colorBlock = btnAceptar.colors;
-        colorBlock.normalColor = esValido ? colorActivo : colorInactivo;
-        colorBlock.highlightedColor = esValido ? colorActivo : colorInactivo;
-        colorBlock.pressedColor = esValido ? colorActivo : colorInactivo;
-        colorBlock.selectedColor = esValido ? colorActivo : colorInactivo;
-        colorBlock.disabledColor = colorInactivo;
-        btnAceptar.colors = colorBlock;
+        ColorBlock colores = btnAceptar.colors;
+        colores.normalColor = esValido ? colorActivo : colorInactivo;
+        colores.highlightedColor = colores.normalColor;
+        colores.pressedColor = colores.normalColor;
+        colores.selectedColor = colores.normalColor;
+        colores.disabledColor = colorInactivo;
+        btnAceptar.colors = colores;
     }
 
     private void GuardarUsuarioLocal(Usuario usuario)
     {
         string ruta = Path.Combine(Application.persistentDataPath, "usuarios.json");
-        UsuarioList lista;
+        UsuarioList lista = new UsuarioList();
 
         if (File.Exists(ruta))
         {
             string json = File.ReadAllText(ruta);
             lista = JsonUtility.FromJson<UsuarioList>(json);
         }
-        else
-        {
-            lista = new UsuarioList { usuarios = new List<Usuario>() };
-        }
 
+        lista.usuarios ??= new List<Usuario>();
         lista.usuarios.Add(usuario);
+
         string nuevoJson = JsonUtility.ToJson(lista, true);
         File.WriteAllText(ruta, nuevoJson);
 
         Debug.Log("Usuario guardado localmente en: " + ruta);
     }
-
 }
