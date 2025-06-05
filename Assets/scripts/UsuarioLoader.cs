@@ -22,7 +22,7 @@ public class UsuarioLoader : MonoBehaviour
     private string NombreImagenDefault = "default.png";
 
     private Sprite spriteDefault;
-
+        
     private void OnEnable()
     {
         Debug.Log("[UsuarioLoader] OnEnable: Inicio de carga de usuarios.");
@@ -36,10 +36,16 @@ public class UsuarioLoader : MonoBehaviour
         yield return StartCoroutine(CargarUsuariosUnicaVez());
     }
 
+
+    // Este método se llama una sola vez al inicio para cargar los usuarios desde el servidor o desde el archivo local.
+    // Si el archivo local no existe, se descargan los usuarios del servidor.
+    // Si el archivo local existe, se cargan los usuarios desde allí.
+    // Si hay un error al descargar del servidor, se usa el archivo local como respaldo.
+    // Si hay usuarios en el archivo local, se muestran en el panel.
+    // Si no hay usuarios, se muestra un mensaje de que no hay usuarios disponibles.
     IEnumerator CargarUsuariosUnicaVez()
     {
         LimpiarPanel();
-        Debug.Log("[UsuarioLoader] Limpiado panel de usuarios.");
 
         List<Usuario> usuarios = null;
         string url = serverBaseUrl + apiEndpoint;
@@ -50,6 +56,7 @@ public class UsuarioLoader : MonoBehaviour
         if (request.result == UnityWebRequest.Result.Success)
         {
             string json = "{\"usuarios\":" + request.downloadHandler.text + "}";
+            // Guardar el JSON descargado en el archivo local
             File.WriteAllText(RutaLocal, json);
 
             UsuarioList lista = JsonUtility.FromJson<UsuarioList>(json);
@@ -59,6 +66,7 @@ public class UsuarioLoader : MonoBehaviour
         {
             if (File.Exists(RutaLocal))
             {
+                // Si hay un error al descargar del servidor, se carga desde el archivo local
                 string json = File.ReadAllText(RutaLocal);
                 UsuarioList lista = JsonUtility.FromJson<UsuarioList>(json);
                 usuarios = lista?.usuarios ?? new List<Usuario>();
@@ -81,10 +89,12 @@ public class UsuarioLoader : MonoBehaviour
             Destroy(child.gameObject);
     }
 
+    // Método para mostrar los usuarios en el panel.
     IEnumerator MostrarUsuarios(List<Usuario> usuarios)
     {
-        int contador = 0;
-        PanelManager panelManager = FindObjectOfType<PanelManager>();
+        int contador = 0; // Contador para limitar la cantidad de usuarios mostrados por frame
+
+        PanelManager panelManager = Object.FindFirstObjectByType<PanelManager>(); // Reemplazo de método obsoleto
 
         foreach (Usuario u in usuarios)
         {
@@ -102,7 +112,7 @@ public class UsuarioLoader : MonoBehaviour
                 AsignarSpriteAlBoton(boton, spriteDefault);
             }
 
-            if (++contador % 5 == 0)
+            if (++contador % 5 == 0) // Limitar a 5 usuarios por frame
                 yield return null;
 
             BotonUsuario botonUsuario = boton.GetComponent<BotonUsuario>();

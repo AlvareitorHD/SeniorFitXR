@@ -10,20 +10,45 @@ public class PanelManager : MonoBehaviour
     public GameObject panelUsuarios;
     public GameObject panelEjercicios;
     // Puedes añadir más paneles aquí...
+    GameObject robot;
 
     void Start()
     {
-        MostrarSolo(panelInicio);
-        panelRegistro.SetActive(false);
-        //panelOpciones.SetActive(false);
-        panelUsuarios.SetActive(false);
-        panelEjercicios.SetActive(false);
+
+        // Comprobamos si hay usuario actual, si hay, mostramos el panel de ejercicios, si no, mostramos el panel de inicio
+        if (UsuarioGlobal.Instance.UsuarioActual != null)
+        {
+            MostrarEjercicios();
+        }
+        else
+        {
+            MostrarInicio();
+        }
+
+        // Asegúrate de que el robot esté desactivado al inicio
+        robot = GameObject.Find("robot");
+        if (robot != null)
+        {
+            robot.SetActive(false);
+        }
+        else
+        {
+            Debug.LogWarning("No se encontró el objeto 'robot' en la escena.");
+        }
 
     }
 
     public void MostrarInicio()
     {
         MostrarSolo(panelInicio);
+    }
+
+    public void MostrarInicioTrasCerrarSesion()
+    {
+        // Ejecutamos el audio source
+        GetComponent<AudioSource>().Play();
+        // El usuario actual se limpia ya desde UsuarioGlobal.Instance al cerrar sesión
+        MostrarInicio();
     }
 
     public void MostrarRegistro()
@@ -46,7 +71,7 @@ public class PanelManager : MonoBehaviour
         MostrarSolo(panelEjercicios);
 
         // Poner la foto y nombre del usuario actual en el objeto cabecera -> usuario del panel de ejercicios
-        if (UsuarioGlobal.Instance.usuarioActual != null)
+        if (UsuarioGlobal.Instance.UsuarioActual != null)
         {
             GameObject usuarioPanel = panelEjercicios.transform.Find("cabecera/usuario")?.gameObject;
             if (usuarioPanel == null)
@@ -59,7 +84,7 @@ public class PanelManager : MonoBehaviour
             var nombreText = usuarioPanel.transform.Find("nombre_usuario")?.GetComponent<TMPro.TextMeshProUGUI>();
             if (nombreText != null)
             {
-                nombreText.text = UsuarioGlobal.Instance.usuarioActual.name;
+                nombreText.text = UsuarioGlobal.Instance.UsuarioActual.name;
             }
             else
             {
@@ -71,7 +96,7 @@ public class PanelManager : MonoBehaviour
             if (fotoImage != null)
             {
                 // QUitar "/uploads/" de la URL de la imagen
-                string nombreIMG = UsuarioGlobal.Instance.usuarioActual.photoUrl;
+                string nombreIMG = UsuarioGlobal.Instance.UsuarioActual.photoUrl;
                 if (nombreIMG.StartsWith("/uploads/"))
                 {
                     nombreIMG = nombreIMG.Substring(9);
@@ -102,6 +127,17 @@ public class PanelManager : MonoBehaviour
         else
         {
             Debug.LogWarning("No hay un usuario actual establecido.");
+        }
+
+        // Activar el robot de la escena
+       
+        if (robot != null)
+        {
+            robot.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("No se encontró el objeto 'robot' en la escena.");
         }
     }
 

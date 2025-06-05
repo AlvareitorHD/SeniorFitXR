@@ -2,12 +2,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections;
+using System.IO;
 
 public class BotonUsuario : MonoBehaviour
 {
     public int usuarioId;
     public string servidorBase = "https://pegasus-powerful-imp.ngrok-free.app";
     public PanelManager panelManager;
+    private string RutaLocal => Path.Combine(Application.persistentDataPath, "usuarios.json");
+
 
     private void Start()
     {
@@ -25,7 +28,7 @@ public class BotonUsuario : MonoBehaviour
         {
             string json = request.downloadHandler.text;
             Usuario usuario = JsonUtility.FromJson<Usuario>(json);
-            UsuarioGlobal.Instance.usuarioActual = usuario;
+            UsuarioGlobal.Instance.EstablecerUsuario(usuario);
 
             Debug.Log($"[BotonUsuario] Usuario {usuario.name} cargado como usuarioActual.");
 
@@ -40,7 +43,32 @@ public class BotonUsuario : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"[BotonUsuario] Error al cargar usuario ID {usuarioId}: {request.error}");
+            Debug.LogWarning($"[BotonUsuario] Error al cargar usuario ID {usuarioId} del servidor: {request.error}");
+            // Cargar el usuario de memoria local
+            if (File.Exists(RutaLocal))
+            {
+                string json = File.ReadAllText(RutaLocal);
+                UsuarioList lista = JsonUtility.FromJson<UsuarioList>(json);
+                Usuario usuario = lista.usuarios.Find(u => u.id == usuarioId);
+                if (usuario != null)
+                {
+                    UsuarioGlobal.Instance.EstablecerUsuario(usuario);
+                    Debug.Log($"[BotonUsuario] Usuario {usuario.name} cargado desde memoria local.");
+                    if (panelManager != null)
+                    {
+                        panelManager.MostrarEjercicios();
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"[BotonUsuario] Usuario ID {usuarioId} no encontrado en memoria local.");
+                }
+            }
+            else
+            {
+                Debug.LogError("[BotonUsuario] No se encontró el archivo de usuarios en memoria local.");
+            }
+
         }
     }
 }

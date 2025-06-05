@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 97a33c0ceceddb644ad08f1b9d9eb69d
+guid: 65c90850f602135439823e076eddb45e
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -36,9 +36,9 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Armature.001|Action.idle
-      takeName: Armature.001|Action.idle
-      internalID: -7642073575267282209
+      name: armature|Action.alzar_brazos
+      takeName: armature|Action.alzar_brazos
+      internalID: -6048448079645325775
       firstFrame: 0
       lastFrame: 119
       wrapMode: 0
@@ -65,9 +65,67 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Armature.001|Action.saludo
-      takeName: Armature.001|Action.saludo
-      internalID: -6722221464275629154
+      name: armature|Action.aparicion
+      takeName: armature|Action.aparicion
+      internalID: 4932005471727862838
+      firstFrame: 0
+      lastFrame: 119
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: armature|Action.idle
+      takeName: armature|Action.idle
+      internalID: -1683176636165224906
+      firstFrame: 0
+      lastFrame: 119
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: armature|Action.saludo
+      takeName: armature|Action.saludo
+      internalID: 5893920322979230680
       firstFrame: 0
       lastFrame: 120
       wrapMode: 0
@@ -94,9 +152,9 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: "Armature.001|Action.se\xF1ala"
-      takeName: "Armature.001|Action.se\xF1ala"
-      internalID: -8126899617284775153
+      name: "armature|Action.se\xF1ala"
+      takeName: "armature|Action.se\xF1ala"
+      internalID: -5814499567190667504
       firstFrame: 0
       lastFrame: 119
       wrapMode: 0
@@ -123,9 +181,9 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: "Armature.001|Action.se\xF1alado"
-      takeName: "Armature.001|Action.se\xF1alado"
-      internalID: 2780369154734648686
+      name: "armature|Action.se\xF1alado"
+      takeName: "armature|Action.se\xF1alado"
+      internalID: 9040444704315070004
       firstFrame: 0
       lastFrame: 119
       wrapMode: 0
@@ -135,6 +193,64 @@ ModelImporter:
       loop: 0
       hasAdditiveReferencePose: 0
       loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: armature|Action.torsion
+      takeName: armature|Action.torsion
+      internalID: 2794051805704243806
+      firstFrame: 0
+      lastFrame: 119
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: armature|Action.yoga
+      takeName: armature|Action.yoga
+      internalID: 8428192730421100803
+      firstFrame: 0
+      lastFrame: 119
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
       loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0
@@ -181,9 +297,9 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: "cabeza.001|Action.se\xF1ala"
-      takeName: "cabeza.001|Action.se\xF1ala"
-      internalID: 6423902209172470279
+      name: "cabeza.001|Action.se\xF1alado"
+      takeName: "cabeza.001|Action.se\xF1alado"
+      internalID: -2436820731419906329
       firstFrame: 0
       lastFrame: 119
       wrapMode: 0
@@ -192,7 +308,7 @@ ModelImporter:
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 0
+      loopTime: 1
       loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0

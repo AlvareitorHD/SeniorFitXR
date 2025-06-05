@@ -82,7 +82,7 @@ public class RegistroUsuario : MonoBehaviour
         if (gestorUI != null)
         {
             PanelManager panelManager = gestorUI.GetComponent<PanelManager>();
-            panelManager?.MostrarInicio();
+            panelManager?.MostrarUsuarios();
         }
 
     }
@@ -118,6 +118,7 @@ public class RegistroUsuario : MonoBehaviour
             lista = JsonUtility.FromJson<UsuarioList>(json);
         }
 
+        // Si no existe la lista, inicializarla
         lista.usuarios ??= new List<Usuario>();
         lista.usuarios.Add(usuario);
 

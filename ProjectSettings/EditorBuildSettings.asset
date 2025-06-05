@@ -6,9 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/Scenes/avion.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
-  - enabled: 0
     path: Assets/Scenes/inicio_old.unity
     guid: a5629b5057cfa874a8f07f28b68e16e9
   - enabled: 1
@@ -17,6 +14,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/pelotas.unity
     guid: 0acc7493be86511468f0f288279b0d9b
+  - enabled: 1
+    path: Assets/Scenes/avion.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/yoga.unity
+    guid: 2d786cebe9701864388b3276664da8a3
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 289c1b55c9541489481df5cc06664110, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: a23a4da337e6e8940bdbea78b883c8a3, type: 2}

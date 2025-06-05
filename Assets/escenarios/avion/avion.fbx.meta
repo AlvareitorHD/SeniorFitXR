@@ -3,7 +3,12 @@ guid: f6d026853a80b8046adbdd473ba7f5af
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.008
+    second: {fileID: 2100000, guid: 7f3d7452be6d5d74f9151d4e7459f025, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -31,11 +36,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Cube.001|Cube.001Action
-      takeName: Cube.001|Cube.001Action
-      internalID: -8515560403302317629
+      name: Cube.023|Cube.023Action
+      takeName: Cube.023|Cube.023Action
+      internalID: 2233029854814411335
       firstFrame: 0
-      lastFrame: 59
+      lastFrame: 249
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
