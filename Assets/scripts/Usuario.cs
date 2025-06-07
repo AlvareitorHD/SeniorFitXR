@@ -21,7 +21,6 @@ public class Usuario
     {
         this.name = nombre;
         this.height = altura;
-        this.fechaRegistro = DateTime.Now;
     }
 }
 

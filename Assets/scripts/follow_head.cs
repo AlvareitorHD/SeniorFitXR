@@ -17,7 +17,7 @@ public class FollowPlayerHeadImproved : MonoBehaviour
 
     [Header("Umbral de movimiento horizontal")]
     [Tooltip("Ángulo mínimo (en grados) que se debe superar para mover horizontalmente el menú.")]
-    public float horizontalAngleThreshold = 45f;
+    public float horizontalAngleThreshold = 90f;
 
     private Vector3 previousForwardFlat; // Dirección anterior (solo eje Y)
     private Camera mainCamera;
@@ -57,7 +57,7 @@ public class FollowPlayerHeadImproved : MonoBehaviour
         Vector3 menuForward = (transform.position - playerHead.position).normalized;
         float dot = Vector3.Dot(menuForward, menuToPlayer.normalized);
 
-        bool playerBehindPanel = dot < 0f; // Producto escalar negativo → jugador detrás
+        bool playerBehindPanel = dot < 0f; // Producto escalar negativo => jugador detrás
 
         Vector3 desiredPosition = transform.position;
 

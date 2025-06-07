@@ -22,7 +22,8 @@ public class UsuarioLoader : MonoBehaviour
     private string NombreImagenDefault = "default.png";
 
     private Sprite spriteDefault;
-        
+    public Sprite spriteLocal;
+
     private void OnEnable()
     {
         Debug.Log("[UsuarioLoader] OnEnable: Inicio de carga de usuarios.");
@@ -184,7 +185,7 @@ public class UsuarioLoader : MonoBehaviour
         else
         {
             Debug.LogWarning("[UsuarioLoader] No se pudo descargar la imagen por defecto: " + request.error);
-            spriteDefault = null;
+            spriteDefault = spriteLocal;
         }
     }
 

@@ -6,7 +6,7 @@ public class PanelManager : MonoBehaviour
     [Header("Paneles de UI")]
     public GameObject panelInicio;
     public GameObject panelRegistro;
-   // public GameObject panelOpciones;
+    public GameObject panelOpciones;
     public GameObject panelUsuarios;
     public GameObject panelEjercicios;
     // Puedes añadir más paneles aquí...
@@ -56,10 +56,10 @@ public class PanelManager : MonoBehaviour
         MostrarSolo(panelRegistro);
     }
 
-   /* public void MostrarOpciones()
+    public void MostrarOpciones()
     {
         MostrarSolo(panelOpciones);
-    }*/
+    }
 
     public void MostrarUsuarios()
     {
@@ -146,7 +146,7 @@ public class PanelManager : MonoBehaviour
     {
         panelInicio.SetActive(panelActivo == panelInicio);
         panelRegistro.SetActive(panelActivo == panelRegistro);
-        //panelOpciones.SetActive(panelActivo == panelOpciones);
+        panelOpciones.SetActive(panelActivo == panelOpciones);
         panelUsuarios.SetActive(panelActivo == panelUsuarios);
         panelEjercicios.SetActive(panelActivo == panelEjercicios);
         // Añade aquí más paneles si agregas más

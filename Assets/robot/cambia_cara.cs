@@ -20,7 +20,7 @@ public class CambiarAlbedoCara : MonoBehaviour
     {
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
 
-        if (stateInfo.IsName("armature|Action_saludo"))
+        if (stateInfo.IsName("armature|Action_saludo") || stateInfo.IsName("Bienvenida"))
         {
             caraMaterial.SetTexture("_MainTex", texturaFeliz);
         }
@@ -28,11 +28,11 @@ public class CambiarAlbedoCara : MonoBehaviour
         {
             caraMaterial.SetTexture("_MainTex", texturaNormal);
         }
-        else if (stateInfo.IsName("armature|Action_torsion") || stateInfo.IsName("armature|Action_yoga"))
+        else if (stateInfo.IsName("Yoga") || stateInfo.IsName("AlzarBrazos"))
         {
             caraMaterial.SetTexture("_MainTex", texturaEsfuerzo);
         }
-        else if(stateInfo.IsName("armature|Action_aparicion"))
+        else if(stateInfo.IsName("armature|Action_aparicion") || stateInfo.IsName("Aparicion"))
         {
             caraMaterial.SetTexture("_MainTex", texturaAparicion);
         }

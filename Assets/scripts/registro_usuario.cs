@@ -45,6 +45,8 @@ public class RegistroUsuario : MonoBehaviour
         WWWForm form = new WWWForm();
         form.AddField("name", nombre);
         form.AddField("height", alturaCm);
+        // Fecha de registro local
+        form.AddField("fechaRegistro", System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
         StartCoroutine(EnviarFormulario(form, nombre, alturaSeleccionada));
     }

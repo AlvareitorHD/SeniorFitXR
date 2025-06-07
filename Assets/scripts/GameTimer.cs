@@ -7,13 +7,14 @@ public class GameTimer : MonoBehaviour
     public float gameDuration = 300f; // Duración modificable
     public TextMeshProUGUI timerText;
 
-    public GameObject canvasRoot;    // 👉 Asigna aquí el objeto raíz del Canvas en el Inspector
+    public GameObject canvasRoot;    // Asigna aquí el objeto raíz del Canvas en el Inspector
     public GameObject endPanel;
     public GameObject pausePanel;
     public GameObject gestorPuntos;
 
     private float remainingTime;
     private bool isPaused;
+    private bool isFinished;
 
     // Tiempo de 10 segundos antes de que empiece a contar
     private float initialDelay = 10f;
@@ -32,18 +33,19 @@ public class GameTimer : MonoBehaviour
 
     void Update()
     {
+
+        // comprobar si el jugador ha hecho con la mano el boton de three
+        if (OVRInput.GetDown(OVRInput.Button.Start) || OVRInput.GetDown(OVRInput.Button.Three) || OVRInput.GetDown(OVRInput.Button.Four) || OVRInput.GetDown(OVRInput.Button.Two))
+        {
+            TogglePause();
+        }
+
         initialDelay -= Time.deltaTime;
         // Si el temporizador es menor que el retraso inicial, no hacemos nada
         if (initialDelay > 0f)
         {
             timerText.text = "El juego comenzará en: " + Mathf.CeilToInt(initialDelay).ToString() + " segundos";
             return; // No actualizamos el temporizador hasta que pase el retraso inicial
-        }
-
-        // comprobar si el jugador ha hecho con la mano el boton de three
-        if (OVRInput.GetDown(OVRInput.Button.Three))
-        {
-            TogglePause();
         }
 
         if (isPaused) return;
@@ -74,6 +76,8 @@ public class GameTimer : MonoBehaviour
 
     public void TogglePause()
     {
+        // Si el juego ya ha terminado, no hacemos nada
+        if (isFinished) return;
         // Pausamos el gestor de puntos si existe
         if (gestorPuntos != null)
         {
@@ -103,6 +107,7 @@ public class GameTimer : MonoBehaviour
 
     public void EndGame()
     {
+        isFinished = true;
         // Ejecutar el audio source
         AudioSource audioSource = GetComponent<AudioSource>();
         if (audioSource != null)
@@ -145,7 +150,7 @@ public class GameTimer : MonoBehaviour
         if (canvasRoot != null)
             canvasRoot.SetActive(true);
 
-        // ✅ NUEVO: Actualizar usuarioActual con puntos y tiempo
+        // Actualizar usuarioActual con puntos y tiempo
         float tiempoJugadoMin = CalcularTiempoJugado(); // Asegúrate de tener esta función si no la tienes
 
         if (UsuarioGlobal.Instance != null)
@@ -169,6 +174,10 @@ public class GameTimer : MonoBehaviour
     {
         SceneManager.LoadScene("inicio");
     }
+    public void RepetirEjercicio()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 
     public void TerminarDesdePausa()
     {
@@ -180,4 +189,25 @@ public class GameTimer : MonoBehaviour
     {
         TogglePause();
     }
+
+    public float TiempoRestante()
+    {
+        return remainingTime;
+    }
+
+    public float DuracionTotal()
+    {
+        return gameDuration;
+    }
+
+    public float InitialDelayRestante()
+    {
+        return initialDelay;
+    }
+
+    public bool EstaPausado()
+    {
+        return isPaused;
+    }
+
 }
