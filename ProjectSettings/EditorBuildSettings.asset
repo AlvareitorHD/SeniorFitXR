@@ -20,6 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/yoga.unity
     guid: 2d786cebe9701864388b3276664da8a3
+  - enabled: 1
+    path: Assets/Scenes/disco.unity
+    guid: 985279b2625ef37439a3a48515e79deb
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 289c1b55c9541489481df5cc06664110, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: a23a4da337e6e8940bdbea78b883c8a3, type: 2}

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Balon
   - Suelo
+  - PlayerFoot
   layers:
   - Default
   - TransparentFX

@@ -8,6 +8,7 @@ public class CambiarAlbedoCara : MonoBehaviour
     public Texture texturaFeliz;
     public Texture texturaEsfuerzo;
     public Texture texturaAparicion;
+    public Texture texturaGafas;
 
     private Animator animator;
 
@@ -35,6 +36,10 @@ public class CambiarAlbedoCara : MonoBehaviour
         else if(stateInfo.IsName("armature|Action_aparicion") || stateInfo.IsName("Aparicion"))
         {
             caraMaterial.SetTexture("_MainTex", texturaAparicion);
+        }
+        else if (stateInfo.IsName("armature|Action_disco") || stateInfo.IsName("Disco"))
+        {
+            caraMaterial.SetTexture("_MainTex", texturaGafas);
         }
         else
         {
