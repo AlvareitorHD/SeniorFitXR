@@ -34,8 +34,8 @@ public class GameTimer : MonoBehaviour
     void Update()
     {
 
-        // comprobar si el jugador ha hecho con la mano el boton de three
-        if (OVRInput.GetDown(OVRInput.Button.Start) || OVRInput.GetDown(OVRInput.Button.Three) || OVRInput.GetDown(OVRInput.Button.Four) || OVRInput.GetDown(OVRInput.Button.Two))
+        // comprobar si el jugador ha hecho con la mano el boton de menú
+        if (OVRInput.GetDown(OVRInput.Button.Start))
         {
             TogglePause();
         }

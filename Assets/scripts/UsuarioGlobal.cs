@@ -12,6 +12,9 @@ public class UsuarioGlobal : MonoBehaviour
     public string serverBaseUrl = "https://pegasus-powerful-imp.ngrok-free.app";
     public string apiEndpoint = "/api/usuarios";
 
+    // Boolenao para saber si el servidor está activo
+    private bool isServerActive = true;
+
     //Getter para obtener el usuario actual
     public Usuario UsuarioActual
     {
@@ -124,6 +127,8 @@ public class UsuarioGlobal : MonoBehaviour
         else
         {
             Debug.LogError("[UsuarioGlobal] Error al actualizar el usuario: " + request.error);
+            // Si el servidor no es accesible, desactivamos el booleano isServerActive
+            isServerActive = false;
         }
 
         GuardarUsuarioLocal(usuarioActual);
@@ -180,10 +185,14 @@ public class UsuarioGlobal : MonoBehaviour
         if (request.result == UnityWebRequest.Result.Success)
         {
             Debug.Log("[UsuarioGlobal] Nueva sesión iniciada en el servidor.");
+            // Si la sesión se inicia correctamente, activamos el booleano isServerActive
+            isServerActive = true;
         }
         else
         {
             Debug.LogError("[UsuarioGlobal] Error al iniciar nueva sesión: " + request.error);
+            // Si el servidor no es accesible, desactivamos el booleano isServerActive
+            isServerActive = false;
         }
     }
 
@@ -290,7 +299,7 @@ public class UsuarioGlobal : MonoBehaviour
     private IEnumerator EnviarROMPeriodicamente()
     {
         // Mientras el usuario esté activo y los componentes VR estén asignados
-        while (usuarioActual != null)
+        while (usuarioActual != null && isServerActive)
         {
             if (usuarioActual != null && cabeza != null && manoIzquierda != null && manoDerecha != null)
             {

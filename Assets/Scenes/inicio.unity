@@ -8032,7 +8032,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 628768966}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -11134,10 +11134,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -6887209009278314490, guid: 65c90850f602135439823e076eddb45e, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 2485199932760772096, guid: 1bfa2843a3c55904e8cff3938a8334c0, type: 3}
     - target: {fileID: 919132149155446097, guid: 65c90850f602135439823e076eddb45e, type: 3}
       propertyPath: m_Name
       value: robot
       objectReference: {fileID: 0}
+    - target: {fileID: 8132136828847887593, guid: 65c90850f602135439823e076eddb45e, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -1816431268331684087, guid: 1bfa2843a3c55904e8cff3938a8334c0, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -15139,9 +15147,12 @@ MonoBehaviour:
   verticalOffset: -0.2
   additionalOffset: {x: 0, y: 0, z: 0}
   positionLerpSpeed: 5
+  minY: 0
+  maxY: 2
   facePlayer: 1
   keepUpright: 1
-  horizontalAngleThreshold: 45
+  maxDistance: 2.5
+  minDotThreshold: -0.3
 --- !u!1 &1141265245
 GameObject:
   m_ObjectHideFlags: 0
