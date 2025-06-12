@@ -12,7 +12,7 @@ public class UsuarioGlobal : MonoBehaviour
     public string serverBaseUrl = "https://pegasus-powerful-imp.ngrok-free.app";
     public string apiEndpoint = "/api/usuarios";
 
-    // Boolenao para saber si el servidor está activo
+    // Booleano para saber si el servidor está activo
     private bool isServerActive = true;
 
     //Getter para obtener el usuario actual
@@ -52,7 +52,6 @@ public class UsuarioGlobal : MonoBehaviour
         UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-
     public void EstablecerUsuario(Usuario usuario)
     {
         usuarioActual = usuario;
@@ -78,19 +77,11 @@ public class UsuarioGlobal : MonoBehaviour
         }
     }
 
-    public void AgregarLogro(string logro)
+    public void AgregarLogro(Logro logro)
     {
-        if (usuarioActual != null && !usuarioActual.logros.Contains(logro))
+        if (usuarioActual != null)
         {
             usuarioActual.logros.Add(logro);
-        }
-    }
-
-    public void AgregarReto(string reto)
-    {
-        if (usuarioActual != null && !usuarioActual.retosCompletados.Contains(reto))
-        {
-            usuarioActual.retosCompletados.Add(reto);
         }
     }
 
@@ -136,8 +127,27 @@ public class UsuarioGlobal : MonoBehaviour
 
     private void GuardarUsuarioLocal(Usuario usuario)
     {
-        string path = Path.Combine(Application.persistentDataPath, "usuario.json");
-        string json = JsonUtility.ToJson(usuario, true);
+        string path = Path.Combine(Application.persistentDataPath, "usuarios.json");
+        List<Usuario> usuarios = new List<Usuario>();
+
+        if (File.Exists(path))
+        {
+            string contenido = File.ReadAllText(path);
+            UsuarioList lista = JsonUtility.FromJson<UsuarioList>(contenido);
+            usuarios = lista.usuarios;
+
+            // Reemplazar si ya existe el usuario
+            int index = usuarios.FindIndex(u => u.id == usuario.id);
+            if (index >= 0) usuarios[index] = usuario;
+            else usuarios.Add(usuario);
+        }
+        else
+        {
+            usuarios.Add(usuario);
+        }
+
+        UsuarioList nuevaLista = new UsuarioList { usuarios = usuarios };
+        string json = JsonUtility.ToJson(nuevaLista, true);
         File.WriteAllText(path, json);
         Debug.Log($"[UsuarioGlobal] Usuario guardado localmente en {path}");
     }
@@ -350,7 +360,7 @@ public class UsuarioGlobal : MonoBehaviour
         }
     }
 
-    [System.Serializable]
+    [System.Serializable] // Serializable significa que esta clase puede ser convertida a JSON
     public class ROMData
     {
         public float cabeza;

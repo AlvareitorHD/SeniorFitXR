@@ -48,41 +48,137 @@ public class UsuarioLoader : MonoBehaviour
     {
         LimpiarPanel();
 
-        List<Usuario> usuarios = null;
-        string url = serverBaseUrl + apiEndpoint;
+        List<Usuario> usuariosLocales = CargarUsuariosLocales();
+        List<Usuario> usuariosServidor = null;
 
+        // 1. Descargar usuarios del servidor
+        string url = serverBaseUrl + apiEndpoint;
         UnityWebRequest request = UnityWebRequest.Get(url);
         yield return request.SendWebRequest();
 
         if (request.result == UnityWebRequest.Result.Success)
         {
             string json = "{\"usuarios\":" + request.downloadHandler.text + "}";
-            // Guardar el JSON descargado en el archivo local
-            File.WriteAllText(RutaLocal, json);
+            UsuarioList listaServidor = JsonUtility.FromJson<UsuarioList>(json);
+            usuariosServidor = listaServidor?.usuarios ?? new List<Usuario>();
 
-            UsuarioList lista = JsonUtility.FromJson<UsuarioList>(json);
-            usuarios = lista?.usuarios ?? new List<Usuario>();
+            // 2. Subir usuarios locales no sincronizados (id negativo)
+            foreach (Usuario u in usuariosLocales)
+            {
+                if (u.id < 0)
+                {
+                    WWWForm form = new WWWForm();
+                    form.AddField("name", u.name);
+                    // Redondear a 2 decimales para evitar problemas de precisión
+                    int alturaCm = Mathf.RoundToInt(u.height * 100f);
+                    form.AddField("height", alturaCm);
+                    form.AddField("fechaRegistro", u.fechaRegistro);
+
+                    form.AddField("puntosTotales", u.puntosTotales);
+                    form.AddField("puntosSesion", u.puntosSesion);
+                    form.AddField("numeroSesiones", u.numeroSesiones);
+                    form.AddField("tiempoTotalEjercicio", u.tiempoTotalEjercicio.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    
+                    // En el futuro, podría serializar logros si es necesario
+
+                    // Registrar usuario local en el servidor
+                    UnityWebRequest post = UnityWebRequest.Post(serverBaseUrl + "/api/register", form);
+                    yield return post.SendWebRequest();
+
+                    if (post.result == UnityWebRequest.Result.Success)
+                    {
+                        Usuario sincronizado = JsonUtility.FromJson<Usuario>(post.downloadHandler.text);
+                        u.id = sincronizado.id;
+                        u.photoUrl = sincronizado.photoUrl;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[UsuarioLoader] Falló al sincronizar usuario local {u.name}: {post.error}");
+                    }
+                }
+            }
+
+            // 3. Fusionar y guardar usuarios únicos localmente
+            List<Usuario> fusionados = FusionarUsuarios(usuariosLocales, usuariosServidor);
+            GuardarUsuariosLocales(fusionados);
+            yield return StartCoroutine(MostrarUsuarios(fusionados));
         }
         else
         {
-            if (File.Exists(RutaLocal))
-            {
-                // Si hay un error al descargar del servidor, se carga desde el archivo local
-                string json = File.ReadAllText(RutaLocal);
-                UsuarioList lista = JsonUtility.FromJson<UsuarioList>(json);
-                usuarios = lista?.usuarios ?? new List<Usuario>();
-            }
-            else
-            {
-                usuarios = new List<Usuario>();
-            }
-        }
-
-        if (usuarios != null && usuarios.Count > 0)
-        {
-            yield return StartCoroutine(MostrarUsuarios(usuarios));
+            Debug.LogWarning("[UsuarioLoader] Error al contactar con el servidor. Cargando solo usuarios locales.");
+            yield return StartCoroutine(MostrarUsuarios(usuariosLocales));
         }
     }
+
+    List<Usuario> CargarUsuariosLocales()
+    {
+        if (!File.Exists(RutaLocal)) return new List<Usuario>();
+
+        string json = File.ReadAllText(RutaLocal);
+        UsuarioList lista = JsonUtility.FromJson<UsuarioList>(json);
+        return lista?.usuarios ?? new List<Usuario>();
+    }
+
+    void GuardarUsuariosLocales(List<Usuario> usuarios)
+    {
+        UsuarioList lista = new UsuarioList { usuarios = usuarios };
+        string json = JsonUtility.ToJson(lista, true);
+        File.WriteAllText(RutaLocal, json);
+    }
+
+    List<Usuario> FusionarUsuarios(List<Usuario> locales, List<Usuario> servidor)
+    {
+        Dictionary<int, Usuario> mapaServidor = new Dictionary<int, Usuario>();
+        foreach (Usuario u in servidor)
+        {
+            mapaServidor[u.id] = u;
+        }
+
+        List<Usuario> fusionados = new List<Usuario>();
+
+        foreach (Usuario local in locales)
+        {
+            // Si el usuario local ya no existe en el servidor y no es uno con ID negativo (temporal/local), lo eliminamos
+            if (local.id > 0 && !mapaServidor.ContainsKey(local.id))
+            {
+                Debug.Log($"[UsuarioLoader] Eliminando usuario local eliminado del servidor: {local.name} (ID: {local.id})");
+                EliminarUsuarioLocal(local);
+                continue; // no se añade al resultado final
+            }
+
+            // Si aún existe, se mantiene (y puede sobrescribirse luego si viene del servidor)
+            fusionados.Add(local);
+        }
+
+        // Agregamos usuarios del servidor (reemplazando si ya estaban)
+        foreach (Usuario remoto in servidor)
+        {
+            int index = fusionados.FindIndex(u => u.id == remoto.id);
+            if (index >= 0)
+                fusionados[index] = remoto; // sobrescribe el existente
+            else
+                fusionados.Add(remoto);
+        }
+
+        return fusionados;
+    }
+
+    void EliminarUsuarioLocal(Usuario usuario)
+    {
+        // Eliminar foto si no es la default
+        if (!string.IsNullOrEmpty(usuario.photoUrl) && !usuario.photoUrl.EndsWith(NombreImagenDefault))
+        {
+            string nombreFoto = Path.GetFileName(usuario.photoUrl);
+            string rutaFoto = Path.Combine(RutaImagenes, nombreFoto);
+
+            if (File.Exists(rutaFoto))
+            {
+                File.Delete(rutaFoto);
+                Debug.Log($"[UsuarioLoader] Foto eliminada: {rutaFoto}");
+            }
+        }
+    }
+
 
     void LimpiarPanel()
     {

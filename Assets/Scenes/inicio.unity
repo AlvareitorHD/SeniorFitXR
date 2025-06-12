@@ -12052,7 +12052,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   serverBaseUrl: https://pegasus-powerful-imp.ngrok-free.app
-  apiEndpoint: /api/usuarios
 --- !u!4 &856566822
 Transform:
   m_ObjectHideFlags: 0
@@ -26360,7 +26359,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4403049104264267883, guid: a07cd17e79ea0e341bccfe5dbe5ddd4c, type: 3}
       propertyPath: serverUrl
-      value: https://pegasus-powerful-imp.ngrok-free.app/register
+      value: https://pegasus-powerful-imp.ngrok-free.app/api/register
       objectReference: {fileID: 0}
     - target: {fileID: 4403049104264267883, guid: a07cd17e79ea0e341bccfe5dbe5ddd4c, type: 3}
       propertyPath: btnAceptar

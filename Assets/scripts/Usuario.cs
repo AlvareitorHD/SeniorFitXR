@@ -11,9 +11,8 @@ public class Usuario
     public string photoUrl;
     public int puntosTotales = 0;
     public int puntosSesion = 0;
-    public List<string> logros = new List<string>();
-    public List<string> retosCompletados = new List<string>();
-    public DateTime fechaRegistro;
+    public List<Logro> logros = new List<Logro>();
+    public string fechaRegistro;
     public int numeroSesiones = 0;
     public float tiempoTotalEjercicio = 0f;
 
@@ -23,7 +22,6 @@ public class Usuario
         this.height = altura;
     }
 }
-
 
 [Serializable]
 public class UsuarioList

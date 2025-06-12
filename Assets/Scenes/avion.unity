@@ -3423,10 +3423,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerCamera: {fileID: 704950911}
   plane: {fileID: 963756135}
-  viewAngle: 15
+  viewAngle: 10
   checkInterval: 1
   pointsPerInterval: 1
   scoreManager: {fileID: 455391454}
+  gameTimer: {fileID: 648359245}
+  balloonManager: {fileID: 532005151}
+  mitad: {fileID: 8300000, guid: aa44f4623a9b9cc4f84bedae3537e8d6, type: 3}
 --- !u!4 &455391453
 Transform:
   m_ObjectHideFlags: 0
@@ -7266,9 +7269,11 @@ MonoBehaviour:
   minY: 1
   maxY: 3.5
   minSpeed: 2
-  maxSpeed: 10
+  maxSpeed: 15
   lateralAmplitude: 1.5
   verticalAmplitude: 0.5
+  tiltAmount: 20
+  tiltSmoothness: 5
 --- !u!4 &963756135 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: f6d026853a80b8046adbdd473ba7f5af, type: 3}
@@ -9931,15 +9936,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 65c90850f602135439823e076eddb45e, type: 3}
       propertyPath: m_LocalScale.x
-      value: 25
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 65c90850f602135439823e076eddb45e, type: 3}
       propertyPath: m_LocalScale.y
-      value: 25
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 65c90850f602135439823e076eddb45e, type: 3}
       propertyPath: m_LocalScale.z
-      value: 25
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 65c90850f602135439823e076eddb45e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -9947,7 +9952,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 65c90850f602135439823e076eddb45e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.3
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 65c90850f602135439823e076eddb45e, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10047,6 +10052,7 @@ MonoBehaviour:
   texturaFeliz: {fileID: 2800000, guid: b471703d24ff21940bfa74ff56d697ff, type: 3}
   texturaEsfuerzo: {fileID: 2800000, guid: 9fc4bea7a079a0442a650cc1091a7d2d, type: 3}
   texturaAparicion: {fileID: 2800000, guid: 68435a45937b5d74b84d2265cc74853d, type: 3}
+  texturaGafas: {fileID: 0}
 --- !u!82 &1428962040
 AudioSource:
   m_ObjectHideFlags: 0
@@ -10057,8 +10063,8 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 4965a0861bb4b9c43afecd5990584a69, type: 3}
-  m_Resource: {fileID: 8300000, guid: 4965a0861bb4b9c43afecd5990584a69, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 23fd996d4d055af4684fdfc6a4346561, type: 3}
+  m_Resource: {fileID: 8300000, guid: 23fd996d4d055af4684fdfc6a4346561, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1

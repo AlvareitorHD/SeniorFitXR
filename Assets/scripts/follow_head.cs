@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Rendering.LookDev;
+using UnityEngine;
 
 public class FollowPlayerHeadImproved : MonoBehaviour
 {
@@ -53,7 +54,8 @@ public class FollowPlayerHeadImproved : MonoBehaviour
         {
             Vector3 lookDir = transform.position - playerHead.position;
             if (keepUpright) lookDir.y = 0;
-            if (lookDir.sqrMagnitude > 0.01f)
+            // Si la dirección de la mirada es significativa, rotar suavemente hacia ella
+            if (lookDir.sqrMagnitude > 0.3f)
             {
                 transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(lookDir), Time.deltaTime * positionLerpSpeed);
             }

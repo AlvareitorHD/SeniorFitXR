@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BalloonBehaviour : MonoBehaviour
 {
@@ -15,6 +16,8 @@ public class BalloonBehaviour : MonoBehaviour
     public Color startColor = new Color(1f, 0.5f, 0.5f); // Rosado claro
     public Color endColor = Color.red;
     public AudioSource audioSource;
+    // Camara del jugador (CenterEyeAnchor del CameraRig de Meta)
+    Transform playerCamera;
 
     [Header("Escalado al mirar")]
     public Vector3 normalScale = new Vector3(20, 20, 20);
@@ -34,13 +37,26 @@ public class BalloonBehaviour : MonoBehaviour
     private Material balloonMaterial;
     private bool poppedByPlayer = false;
 
+    private void Start()
+    {
+        GameObject centerEye = GameObject.Find("CenterEyeAnchor");
+        if (centerEye != null)
+        {
+            playerCamera = centerEye.transform;
+        }
+        else
+        {
+            Debug.LogError("No se encontró el objeto CenterEyeAnchor en la escena.");
+        }
+    }
+
     void OnEnable()
     {
         if (lookCrosshairCanvas != null)
             lookCrosshairCanvas.SetActive(false);
 
         balloonRenderer.enabled = true;
-        ReinciarExplosion();
+        ReiniciarExplosion();
 
         if (scoreManager == null)
         {
@@ -69,8 +85,6 @@ public class BalloonBehaviour : MonoBehaviour
                 Debug.LogWarning("El renderer no tiene suficientes materiales para acceder al segundo.");
             }
         }
-
-        transform.localScale = normalScale;
     }
 
     void Update()
@@ -95,21 +109,28 @@ public class BalloonBehaviour : MonoBehaviour
             if (balloonMaterial != null)
                 balloonMaterial.color = Color.Lerp(startColor, endColor, progress);
 
-            transform.localScale = Vector3.Lerp(normalScale, lookedAtScale, progress);
+            //transform.localScale = Vector3.Lerp(normalScale, lookedAtScale, progress);
 
             if (lookCrosshairCanvas != null)
             {
                 lookCrosshairCanvas.SetActive(true);
-                lookCrosshairCanvas.transform.position = hitPoint + hitNormal * 0.01f;
-                lookCrosshairCanvas.transform.rotation = Quaternion.LookRotation(hitNormal);
+                // Actualiza la posición y rotación del canvas de mira
+                lookCrosshairCanvas.transform.position = hitPoint + hitNormal * 0.1f; // Ajusta la posición para que no esté dentro del globo
+
+                // Quaternion.LookRotation(hitNormal);
+                //lookCrosshairCanvas.transform.rotation = Quaternion.LookRotation(hitNormal, Vector3.up);
 
                 // Alternativa si prefieres que mire hacia la cámara:
-                // lookCrosshairCanvas.transform.LookAt(Camera.main.transform);
-                // lookCrosshairCanvas.transform.Rotate(0, 180f, 0);
+                lookCrosshairCanvas.transform.LookAt(Camera.main.transform);
+                lookCrosshairCanvas.transform.Rotate(0, 180f, 0);
             }
 
             if (gazeTimer >= gazeTimeToPop)
             {
+                // Si el jugador ha mirado el globo el tiempo suficiente, lo explota
+                // Desactiva el canvas de mira
+                if (lookCrosshairCanvas != null)
+                    lookCrosshairCanvas.SetActive(false);
                 poppedByPlayer = true;
                 Pop();
             }
@@ -123,14 +144,17 @@ public class BalloonBehaviour : MonoBehaviour
             if (lookCrosshairCanvas != null)
                 lookCrosshairCanvas.SetActive(false);
 
-            transform.localScale = Vector3.Lerp(transform.localScale, normalScale, Time.deltaTime * 5f);
+            //transform.localScale = Vector3.Lerp(transform.localScale, normalScale, Time.deltaTime * 5f);
         }
     }
 
+    // out es una palabra clave que permite devolver múltiples valores desde un método
     bool IsUserLookingAtBalloon(out Vector3 hitPoint, out Vector3 hitNormal)
     {
-        Vector3 rayOrigin = Camera.main.transform.position + Vector3.down * verticalRaycastOffset;
-        Vector3 rayDirection = Camera.main.transform.forward;
+        // La camara es el objeto centeranchor del camera rig de Meta
+
+        Vector3 rayOrigin = playerCamera.position;  //Camera.main.transform.position + Vector3.down;//* //verticalRaycastOffset;
+        Vector3 rayDirection = playerCamera.forward; //Camera.main.transform.forward;
 
         Debug.DrawRay(rayOrigin, rayDirection * 100f, Color.yellow);
 
@@ -152,9 +176,11 @@ public class BalloonBehaviour : MonoBehaviour
 
     void Pop()
     {
+        balloonRenderer.enabled = false;
+        lookCrosshairCanvas.SetActive(false);
+
         if (poppedByPlayer && audioSource != null && !audioSource.isPlaying && scoreManager != null)
         {
-            balloonRenderer.enabled = false;
             audioSource.Play();
 
             ParticleSystem particleSystem = GetComponentInChildren<ParticleSystem>();
@@ -190,10 +216,11 @@ public class BalloonBehaviour : MonoBehaviour
                 Debug.LogWarning("[BalloonBehaviour] No se encontró el modelo de explosión 'wlovo'.");
             }
 
-            scoreManager.SumarDoble();
+            scoreManager.SumarPunto();
         }
-
-        Invoke(nameof(Deactivate), 1.5f);
+        
+        // El globo se desactiva después de explotar, y 1,5 segundos después se desactiva el objeto
+        Invoke(nameof(Deactivate), 1f);
     }
 
     void Deactivate()
@@ -201,7 +228,7 @@ public class BalloonBehaviour : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    void ReinciarExplosion()
+    void ReiniciarExplosion()
     {
         Transform explosionModel = transform.Find("wlovo");
         if (explosionModel != null)

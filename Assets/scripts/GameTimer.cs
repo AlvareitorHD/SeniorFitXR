@@ -16,8 +16,24 @@ public class GameTimer : MonoBehaviour
     private bool isPaused;
     private bool isFinished;
 
+    // getter de isFinished
+    public bool IsFinished
+    {
+        get { return isFinished; }
+    }
+    // getter de isPaused
+    public bool IsPaused
+    {
+        get { return isPaused; }
+    }
+    // getter de remainingTime
+    public float RemainingTime
+    {
+        get { return remainingTime; }
+    }
+
     // Tiempo de 10 segundos antes de que empiece a contar
-    private float initialDelay = 10f;
+    public float initialDelay = 10f;
 
     void Start()
     {

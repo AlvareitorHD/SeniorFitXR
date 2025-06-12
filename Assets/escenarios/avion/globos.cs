@@ -11,7 +11,8 @@ public class BalloonManager : MonoBehaviour
     private GameObject[] balloons;
     private Transform player;
 
-    void Start()
+    // Método OnEnable se llama cuando el script se activa
+    void OnEnable()
     {
         player = Camera.main.transform;
 
@@ -29,20 +30,39 @@ public class BalloonManager : MonoBehaviour
 
     void SpawnBalloons()
     {
-        
-        int amount = Random.Range(this.poolSize / 2, this.poolSize); // Spawn entre la mitad y el total de globos en el pool
+        // Spawn de globos randoms alrededor del jugador
+        int amount = Random.Range(poolSize/3, poolSize + 1); // Número aleatorio de globos a spawnear
 
         for (int i = 0; i < amount; i++)
         {
             GameObject balloon = GetAvailableBalloon();
             if (balloon != null)
             {
+                // Este vector2 genera un punto aleatorio dentro de un círculo de radio spawnRadius
                 Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;
+
+                // La posición de spawn es la posición del jugador más un desplazamiento aleatorio en el plano XZ
+                // pero hay que evitar que el globo aparezca sobre el propio jugador
+                // Aseguramos que el globo no aparezca demasiado cerca del jugador
+                while (randomCircle.magnitude < 1f)
+                {
+                    randomCircle = Random.insideUnitCircle * spawnRadius;
+                }
                 Vector3 spawnPos = player.position + new Vector3(randomCircle.x, spawnHeightOffset, randomCircle.y);
                 balloon.transform.position = spawnPos;
                 balloon.SetActive(true);
             }
         }
+    }
+
+    public void OnDisable()
+    {
+        // Desactivar todos los globos al desactivar el script
+        foreach (var b in balloons)
+        {
+            b.SetActive(false);
+        }
+        CancelInvoke(nameof(SpawnBalloons)); // Detener la invocación periódica
     }
 
     GameObject GetAvailableBalloon()

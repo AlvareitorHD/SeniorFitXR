@@ -5,6 +5,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
+using System;
 
 public class RegistroUsuario : MonoBehaviour
 {
@@ -22,11 +23,11 @@ public class RegistroUsuario : MonoBehaviour
     private float alturaSeleccionada = 1.50f;
 
     [Header("Red")]
-    public string serverUrl = "https://pegasus-powerful-imp.ngrok-free.app/register";
+    public string serverUrl = "https://pegasus-powerful-imp.ngrok-free.app/api/register";
 
     void Start()
     {
-        //inputNombre.text = "Usuario"; // Solo para pruebas
+        inputNombre.text = "HOLA"; // Solo para pruebas
         inputNombre.onValueChanged.AddListener(ValidarNombre);
         scrollAltura.onValueChanged.AddListener(ActualizarAltura);
 
@@ -54,31 +55,38 @@ public class RegistroUsuario : MonoBehaviour
     IEnumerator EnviarFormulario(WWWForm form, string nombre, float altura)
     {
         UnityWebRequest www = UnityWebRequest.Post(serverUrl, form);
-        // www.certificateHandler = new BypassCertificate(); // opcional con HTTPS self-signed
         yield return www.SendWebRequest();
+
+        Usuario nuevoUsuario;
 
         if (www.result == UnityWebRequest.Result.Success)
         {
             Debug.Log("Registro enviado correctamente: " + www.downloadHandler.text);
+
+            // Leer respuesta del servidor
+            nuevoUsuario = JsonUtility.FromJson<Usuario>(www.downloadHandler.text);
         }
         else
         {
-            Debug.LogError("Error al registrar usuario: " + www.error);
+            Debug.LogWarning("No se pudo registrar en el servidor. Se guardará localmente.");
+
+            // Asignar ID temporal negativo basado en timestamp
+            int idTemporal = -Mathf.Abs(DateTime.Now.Ticks.GetHashCode());
+
+            nuevoUsuario = new Usuario(nombre, altura)
+            {
+                id = idTemporal,
+                photoUrl = "/default.png", // ruta local
+                fechaRegistro = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+            };
         }
 
-        // Guardar usuario local solo si la petición fue exitosa
-        Usuario nuevoUsuario = new Usuario(nombre, altura)
-        {
-            photoUrl = "/default.png", // Aquí puedes asignar una URL de foto si es necesario
-            id = 0, // Asigna un ID si es necesario, o maneja esto en el servidor
-        };
-
         GuardarUsuarioLocal(nuevoUsuario);
-
 
         // Limpiar entradas
         inputNombre.text = "";
         scrollAltura.value = 1.5f;
+
         // Cambiar al panel de inicio
         GameObject gestorUI = GameObject.Find("GestorUI");
         if (gestorUI != null)
@@ -86,7 +94,6 @@ public class RegistroUsuario : MonoBehaviour
             PanelManager panelManager = gestorUI.GetComponent<PanelManager>();
             panelManager?.MostrarUsuarios();
         }
-
     }
 
     private void ActualizarAltura(float valor)
@@ -120,9 +127,15 @@ public class RegistroUsuario : MonoBehaviour
             lista = JsonUtility.FromJson<UsuarioList>(json);
         }
 
-        // Si no existe la lista, inicializarla
+        // Inicializar lista si es null
         lista.usuarios ??= new List<Usuario>();
-        lista.usuarios.Add(usuario);
+
+        // Reemplazar usuario si ya existe uno con el mismo ID
+        int index = lista.usuarios.FindIndex(u => u.id == usuario.id);
+        if (index >= 0)
+            lista.usuarios[index] = usuario;
+        else
+            lista.usuarios.Add(usuario);
 
         string nuevoJson = JsonUtility.ToJson(lista, true);
         File.WriteAllText(ruta, nuevoJson);

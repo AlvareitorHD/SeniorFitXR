@@ -7,6 +7,11 @@ public class ContadorPuntos : MonoBehaviour
     private int puntos = 0;
     public AudioClip sonidoPunto; // Asigna el clip de audio desde el Inspector
     private bool pausado = false;
+
+    // Evento para notificar puntos ganados
+    public delegate void PuntosGanadosHandler(int puntos);
+    public static event PuntosGanadosHandler OnPuntosGanados;
+
     // Getter de puntos
     public int Puntos
     {

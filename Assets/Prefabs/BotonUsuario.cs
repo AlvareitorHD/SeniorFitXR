@@ -11,7 +11,6 @@ public class BotonUsuario : MonoBehaviour
     public PanelManager panelManager;
     private string RutaLocal => Path.Combine(Application.persistentDataPath, "usuarios.json");
 
-
     private void Start()
     {
         panelManager = Object.FindFirstObjectByType<PanelManager>();
