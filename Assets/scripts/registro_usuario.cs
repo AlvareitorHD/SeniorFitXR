@@ -27,7 +27,7 @@ public class RegistroUsuario : MonoBehaviour
 
     void Start()
     {
-        inputNombre.text = "HOLA"; // Solo para pruebas
+        //inputNombre.text = "HOLA"; // Solo para pruebas
         inputNombre.onValueChanged.AddListener(ValidarNombre);
         scrollAltura.onValueChanged.AddListener(ActualizarAltura);
 
