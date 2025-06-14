@@ -167,7 +167,7 @@ public class GameTimer : MonoBehaviour
             canvasRoot.SetActive(true);
 
         // Actualizar usuarioActual con puntos y tiempo
-        float tiempoJugadoMin = CalcularTiempoJugado(); // Asegúrate de tener esta función si no la tienes
+        float tiempoJugadoMin = CalcularTiempoJugado(); // convierte el tiempo a minutos para el envío al servidor
 
         if (UsuarioGlobal.Instance != null)
         {

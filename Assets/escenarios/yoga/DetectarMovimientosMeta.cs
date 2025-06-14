@@ -47,6 +47,8 @@ public class DetectorMovimientosMeta : MonoBehaviour
         if (!haGiradoIzquierda && rotY <= -umbralRotacion)
         {
             haGiradoIzquierda = true;
+            // Hacer sonar el AudioSource para indicar que se ha detectado el giro
+            GetComponent<AudioSource>()?.Play();
         }
         else if (haGiradoIzquierda && rotY >= umbralRotacion)
         {
@@ -67,6 +69,8 @@ public class DetectorMovimientosMeta : MonoBehaviour
         if (!brazosArriba && ambasArriba)
         {
             brazosArriba = true;
+            // Hacer sonar el AudioSource para indicar que se han levantado los brazos
+            GetComponent<AudioSource>()?.Play();
         }
         else if (brazosArriba && alturaL < alturaMinBrazos && alturaR < alturaMinBrazos)
         {

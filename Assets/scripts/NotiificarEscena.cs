@@ -55,6 +55,9 @@ public class EjercicioActualNotifier : MonoBehaviour
             case "disco":
                 escenaActual = "Discoequilibrio";
                 break;
+            case "playa":
+                escenaActual = "Descanso en la playa";
+                break;
             default:
                 // Si no es un ejercicio conocido, no cambiar el nombre
                 break;

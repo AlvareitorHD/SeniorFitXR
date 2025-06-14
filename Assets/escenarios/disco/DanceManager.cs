@@ -53,6 +53,7 @@ public class DanceManager : MonoBehaviour
 
         if (tilePrefab == null) return;
 
+        // Obtenemos el tamaño del prefab para calcular el tamaño de la cuadrícula
         Vector3 prefabSize = GetPrefabWorldSize(tilePrefab);
         float tileSizeX = prefabSize.x;
         float tileSizeZ = prefabSize.z;
@@ -82,6 +83,19 @@ public class DanceManager : MonoBehaviour
             }
         }
     }
+
+    // Posibles desplazamientos a vecinos (8 direcciones)
+    Vector2Int[] directions = new Vector2Int[]
+    {
+                new Vector2Int(0, 1),    // N
+                new Vector2Int(1, 0),    // E
+                new Vector2Int(0, -1),   // S
+                new Vector2Int(-1, 0),   // O
+                new Vector2Int(1, 1),    // NE
+                new Vector2Int(-1, 1),   // NO
+                new Vector2Int(1, -1),   // SE
+                new Vector2Int(-1, -1),  // SO
+    };
 
     Vector3 GetPrefabWorldSize(GameObject prefab)
     {
@@ -124,20 +138,7 @@ public class DanceManager : MonoBehaviour
                 z = Random.Range(0, gridSize);
             }
             else
-            {
-                // Posibles desplazamientos a vecinos (8 direcciones)
-                Vector2Int[] directions = new Vector2Int[]
-                {
-                new Vector2Int(0, 1),    // N
-                new Vector2Int(1, 0),    // E
-                new Vector2Int(0, -1),   // S
-                new Vector2Int(-1, 0),   // O
-                new Vector2Int(1, 1),    // NE
-                new Vector2Int(-1, 1),   // NO
-                new Vector2Int(1, -1),   // SE
-                new Vector2Int(-1, -1),  // SO
-                };
-
+            {                
                 foreach (var dir in directions)
                 {
                     int newX = currX + dir.x;
@@ -175,6 +176,7 @@ public class DanceManager : MonoBehaviour
 
         currentActiveTile = tiles[x, z];
         currentActiveTile.Activate(randColor);
+        lastActiveTile = currentActiveTile; // Actualiza la última baldosa activa
     }
 
     // Devuelve la posición (x, z) de un tile en la matriz
@@ -218,7 +220,6 @@ public class DanceManager : MonoBehaviour
 
             // Desactiva la baldosa actual para evitar múltiples activaciones
             currentActiveTile.Deactivate();
-            lastActiveTile = currentActiveTile;
             currentActiveTile = null;
 
             // Sumar punto usando el sistema
